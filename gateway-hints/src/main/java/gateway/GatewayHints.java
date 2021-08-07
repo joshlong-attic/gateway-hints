@@ -11,6 +11,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+	* Registers the various {@link Configurable} subclasses for Spring Cloud Gateway.
+	*
+	* @author Josh Long
+	*/
 @NativeHint(trigger = GatewayAutoConfiguration.class)
 public class GatewayHints implements NativeConfiguration {
 
