@@ -19,7 +19,6 @@ public class GatewayHints implements NativeConfiguration {
 		return typeSystem.resolve(Configurable.class) != null;
 	}
 
-
 	private static Set<Type> getSubtypesFor(Type type, TypeSystem typeSystem) {
 		var nameOfType = type.isInterface() ? type.getName() : type.getDescriptor();
 		return typeSystem
@@ -32,7 +31,7 @@ public class GatewayHints implements NativeConfiguration {
 					);
 				}
 				catch (Throwable error) {
-					log(error.getMessage());
+					// shrug
 					return false;
 				}
 			})
@@ -42,7 +41,6 @@ public class GatewayHints implements NativeConfiguration {
 
 	@Override
 	public List<HintDeclaration> computeHints(TypeSystem typeSystem) {
-		log("computing hints...");
 		Type configurableResolve = typeSystem.resolve(Configurable.class);
 		if (configurableResolve != null) {
 			Set<String> export = new HashSet<>();
@@ -53,7 +51,7 @@ public class GatewayHints implements NativeConfiguration {
 					export.addAll(type.getTypesInSignature());
 				}
 				catch (Throwable t) {
-					log("can't add signature types :" + t.getMessage());
+					// don't care
 				}
 			}
 			if (export.size() > 0) {
@@ -68,19 +66,9 @@ public class GatewayHints implements NativeConfiguration {
 			.super.computeHints(typeSystem);
 	}
 
-
 	private static HintDeclaration fromType(String clazzName) {
 		var hd = new HintDeclaration();
 		hd.addDependantType(clazzName, new AccessDescriptor(AccessBits.ALL));
-		log("building HintDeclaration for " + clazzName + '.');
 		return hd;
-	}
-
-	private static void log(String m, String... msgs) {
-		log(String.format(m, msgs));
-	}
-
-	private static void log(String msg) {
-		System.out.println(msg);
 	}
 }
