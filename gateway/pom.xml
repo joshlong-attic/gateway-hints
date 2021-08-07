@@ -76,7 +76,7 @@
                 <version>${spring-native.version}</version>
                 <dependencies>
                     <dependency>
-                        <groupId>com.example</groupId>
+                        <groupId>com.joshlong</groupId>
                         <artifactId>gateway-hints</artifactId>
                         <version>0.0.1-SNAPSHOT</version>
                     </dependency>
