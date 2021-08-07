@@ -1,29 +1,22 @@
-package com.example.gateway;
+package gateway;
 
-import org.reflections.Reflections;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.gateway.route.RouteLocator;
-import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AssignableTypeFilter;
-import org.springframework.http.HttpHeaders;
 import org.springframework.nativex.hint.AccessBits;
 import org.springframework.nativex.hint.TypeHint;
+import org.springframework.nativex.type.HintDeclaration;
+import org.springframework.nativex.type.NativeConfiguration;
+import org.springframework.nativex.type.TypeSystem;
 
-import java.lang.reflect.ParameterizedType;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
-/*
+/**
+	* Hints for Spring Cloud Gateway
+	*
+	* @author Josh Long
+	*/
 @TypeHint(
 	access = AccessBits.ALL,
 	typeNames = {
 		"org.springframework.cloud.gateway.filter.factory.AbstractNameValueGatewayFilterFactory$NameValueConfig",
-		//
 		"org.springframework.cloud.gateway.handler.predicate.ReadBodyRoutePredicateFactory",
 		"org.springframework.cloud.gateway.handler.predicate.QueryRoutePredicateFactory",
 		"org.springframework.cloud.gateway.filter.factory.RequestRateLimiterGatewayFilterFactory$Config",
@@ -107,79 +100,24 @@ import java.util.stream.Collectors;
 		"org.springframework.cloud.gateway.handler.predicate.HostRoutePredicateFactory$Config"
 	}
 )
- */
-@SpringBootApplication
-public class GatewayApplication {
+public class GatewayHints implements NativeConfiguration {
 
-
-	// Configurable.class, "org/springframework/cloud/gateway"
-	private static void discoverConfigurableSubclasses1(Class<?> needle, String haystack)
-		throws Exception {
-
-		Set<Class<?>> classesToRegister = new HashSet<>();
-
-		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-		provider.addIncludeFilter(new AssignableTypeFilter(needle));
-		Set<BeanDefinition> components = provider.findCandidateComponents(haystack);
-		for (BeanDefinition component : components) {
-			var beanClassName = component.getBeanClassName();
-//			System.out.println("bean class name: " + beanClassName);
-			var cls = Class.forName(beanClassName);
-			classesToRegister.add(cls);
-//			System.out.println("class name: " + cls.getName());
-			try {
-				var genericType = (Class<?>)
-					((ParameterizedType) cls.getGenericSuperclass())
-						.getActualTypeArguments()[0];
-				classesToRegister.add(genericType);
-//				System.out.println("generic type: " + genericType);
-			}
-			catch (Exception e) {
-				System.err.println("couldn't get generic parameter for " + cls.getName());
-			}
-		}
-
-		var hints = classesToRegister
-			.stream()
-			.filter(clazz -> !clazz.getName().contains("java.lang.Object"))
-			.map(clzz -> '"' + clzz.getName() + '"')
-			.collect(Collectors.joining(", " + System.lineSeparator()));
-
-		System.out.println("hints: " + hints);
-
+	@Override
+	public boolean isValid(TypeSystem typeSystem) {
+		return NativeConfiguration.super.isValid(typeSystem);
 	}
 
-
-	///
-
-	private static <C> void discoverConfigurableSubclasses(Class<C> needle, String haystack)
-		throws Exception {
-		Reflections reflections = new Reflections(haystack.replaceAll("/", "."));
-		Set<Class<? extends C>> subTypes = reflections.getSubTypesOf(needle);
-		for (var clazz : subTypes) {
-			System.out.println(clazz.getName());
-		}
-
+	@Override
+	public List<HintDeclaration> computeHints(TypeSystem typeSystem) {
+		log ("computing hints...");
+		return NativeConfiguration.super.computeHints(typeSystem);
 	}
 
-	public static void main(String[] args) throws Exception {
-//		discoverConfigurableSubclasses(Configurable.class, "org/springframework/cloud/gateway");
-		SpringApplication.run(GatewayApplication.class, args);
+	private static void log(String m, String... msgs) {
+		log(String.format(m, msgs));
 	}
 
-	@Bean
-	RouteLocator gateway(RouteLocatorBuilder rlb) {
-		return rlb
-			.routes()
-			.route(rs -> rs
-				.path("/proxy")
-				.filters(fs -> fs
-					.setPath("/")
-					.addResponseHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-				)
-				.uri("https://start.spring.io/")
-			)
-			.build();
+	private static void log(String msg) {
+		System.out.println(msg);
 	}
 }
-
